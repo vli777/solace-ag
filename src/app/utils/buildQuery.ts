@@ -12,7 +12,7 @@ import { PgTable } from "drizzle-orm/pg-core";
  * 
  * @returns final query object with sorts and filters applied 
  */
-export default function buildQuery<T extends PgTable>(
+export default function buildQuery<T extends PgTable<any>>(
     query: any, 
     table: T,
     filterModel: FilterModel = {}, 
