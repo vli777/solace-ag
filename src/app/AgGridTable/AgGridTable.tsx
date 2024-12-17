@@ -1,10 +1,10 @@
 import React, { useRef, useMemo, useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { IGetRowsParams, ColDef, InfiniteRowModelModule, ValidationModule, ModuleRegistry, GridReadyEvent } from "ag-grid-community";
+import { IGetRowsParams, ColDef, InfiniteRowModelModule, ValidationModule, ModuleRegistry, ColumnAutoSizeModule } from "ag-grid-community";
 import { fetchData } from "../utils/fetchData";
 import { FilterModel } from "@/types/query";
 
-ModuleRegistry.registerModules([InfiniteRowModelModule, ValidationModule]);
+ModuleRegistry.registerModules([ InfiniteRowModelModule, ValidationModule, ColumnAutoSizeModule ]);
 
 type AgGridTableProps = {
   url: string;
@@ -36,6 +36,19 @@ const AgGridTable = ({ url, columnDefs, filterModel }: AgGridTableProps) => {
     return () => window.removeEventListener("resize", calculateCacheBlockSize);
   }, []);
 
+  const autoSizeColumns = () => {
+    if (gridRef.current) {
+      gridRef.current.api.sizeColumnsToFit();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("resize", autoSizeColumns);
+    return () => window.removeEventListener("resize", autoSizeColumns);
+  }, []);
+
+  const columns = useMemo(() => columnDefs.map((col) => ({ ...col, minWidth: 120 })), [columnDefs]);
+
   const data = useMemo(() => ({
     getRows: async (params: IGetRowsParams) => {
       const { startRow, endRow, sortModel } = params;
@@ -55,6 +68,8 @@ const AgGridTable = ({ url, columnDefs, filterModel }: AgGridTableProps) => {
         const rows = response.data || [];
         const lastRow = response.nextCursor ? undefined : startRow + rows.length;
 
+        console.log("Next Cursor:", response.nextCursor, "Last Row:", lastRow);
+
         params.successCallback(rows, lastRow);
       } catch (error) {
         console.error("Error fetching rows:", error);
@@ -64,13 +79,13 @@ const AgGridTable = ({ url, columnDefs, filterModel }: AgGridTableProps) => {
   }), [url, filterModel]);
 
   return (
-    <div className="ag-theme-quartz h-full w-full">
+    <div className="ag-theme-quartz h-full w-full overflow-x-auto">
       <AgGridReact
         ref={gridRef}
-        columnDefs={columnDefs}
+        columnDefs={columns}
         rowModelType="infinite"
         cacheBlockSize={cacheBlockSize} 
-        datasource={data}        
+        datasource={data}    
       />
     </div>
   );

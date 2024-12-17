@@ -60,7 +60,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex-1 h-[500px]">
+      <div className="flex-1 h-[900px]">
         <AgGridTable
           url="/api/advocates"
           columnDefs={advocatesColumnDefs}
