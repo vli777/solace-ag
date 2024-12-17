@@ -6,7 +6,7 @@ import buildQuery from "@/app/utils/buildQuery";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { filterModel, sortModel, offset, limit = 10 } = body;
+    const { filterModel, sortModel, offset, limit = 50 } = body;
 
     let query = db.select().from(advocates);
     query = buildQuery(query, advocates, filterModel, sortModel, offset, limit);
