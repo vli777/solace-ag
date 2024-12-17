@@ -2,30 +2,23 @@ import { NextResponse } from "next/server";
 import db from "@/db";
 import { advocates } from "@/db/schema";
 import buildQuery from "@/app/utils/buildQuery";
-import { count } from "drizzle-orm";
-import { buildAdvocatesQuery } from "./buildAdvocatesQuery";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json()
-    const { filterModel, sortModel, limit, offset } = body
+    const body = await req.json();
+    const { filterModel, sortModel, offset, limit = 10 } = body;
 
-    const query = buildAdvocatesQuery(filterModel, sortModel, { limit, offset })    
-    const data = await query
-    
-    // get total count of rows for pagination usage
-    // @ts-ignore
-    const totalQuery = db.select({ total: count() }).from(advocates);
-    const [{ total }] = await buildQuery(totalQuery, advocates, filterModel, [])
+    let query = db.select().from(advocates);
+    query = buildQuery(query, advocates, filterModel, sortModel, { offset, limit });
 
-    return NextResponse.json({
-      data,
-      total
-    })
+    const data = await query;
+    const nextCursor = data.length > 0 ? data[data.length - 1].id : null;
+
+    return NextResponse.json({ data, nextCursor });
   } catch (error) {
-    const errorMessage = "Error fetching /api/advocates"
+    const errorMessage = "Error fetching /api/advocates";
     console.error(errorMessage, error);
 
-    return NextResponse.json({ status: 500, error: errorMessage })
+    return NextResponse.json({ status: 500, error: errorMessage });
   }
 }

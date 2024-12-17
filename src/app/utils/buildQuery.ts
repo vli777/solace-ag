@@ -1,7 +1,6 @@
-import { FilterModel } from "@/types/query";
-import { SortModelItem } from "ag-grid-community"
-import { eq, ilike, and, asc, desc, Column } from "drizzle-orm"
-import { PgTable } from "drizzle-orm/pg-core";
+import { FilterModel, SortModel } from "@/types/query";
+import { eq, ilike, and, asc, desc, gt, SQL } from "drizzle-orm"
+import { PgColumn, PgTable } from "drizzle-orm/pg-core";
 
 /**
  * buildQuery is a utility function to construct sql queries with filters and sorting for use with Drizzle ORM
@@ -12,17 +11,17 @@ import { PgTable } from "drizzle-orm/pg-core";
  * 
  * @returns final query object with sorts and filters applied 
  */
-export default function buildQuery<T extends PgTable<any>>(
+export default function buildQuery<T extends PgTable<any>> (
     query: any, 
     table: T,
     filterModel: FilterModel = {}, 
-    sortModel: SortModelItem[] = [],
+    sortModel: SortModel,
     options: { limit?: number; offset?: number } = {}
 ) {
     const queryFilters = Object.keys(filterModel).reduce((accFilters, filterKey) => {
         const { type, filter } = filterModel[filterKey];
         
-        const column = table[filterKey as keyof T] as Column | undefined;
+        const column = table[filterKey as keyof T] as PgColumn | undefined;
         if (!column) return accFilters;
                     
         switch(type) {
@@ -37,7 +36,7 @@ export default function buildQuery<T extends PgTable<any>>(
             default:
                 return accFilters
         }
-    }, [] as ReturnType<typeof and>[])        
+    }, [] as SQL[])        
 
     if (queryFilters.length > 0) {
         query = query.where(and(...queryFilters))
@@ -45,24 +44,26 @@ export default function buildQuery<T extends PgTable<any>>(
 
     if (sortModel?.length > 0) {
         const sortConditions = sortModel.map(({ colId, sort }) => {
-            const column = table[colId as keyof T] as Column | undefined;
-            if (column) {
-                return sort === "asc" ? asc(column) : desc(column)
-            }
-            return null;
-        });
+            const column = table[colId as keyof T] as PgColumn | undefined;
+            return column 
+                ? sort === "asc" 
+                    ? asc(column) 
+                    : desc(column)
+                : null
+        }).filter(Boolean)
 
         if (sortConditions.length > 0) {
             query = query.orderBy(...sortConditions)
         }
     }
 
-    const { limit, offset } = options
-    if (limit) {
-        query = query.limit(limit)
+    const { limit, offset } =  options
+    if (options.offset) {
+        const idColumn = (table as unknown as { id: PgColumn }).id;
+        query = query.where(gt(idColumn, offset));
     }
-    if (offset) {
-        query = query.offset(offset)
+    if (limit) {
+        query = query.limit(limit);
     }
 
     return query
