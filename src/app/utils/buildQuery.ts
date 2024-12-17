@@ -8,15 +8,18 @@ import { PgColumn, PgTable } from "drizzle-orm/pg-core";
  * @param table: db table schema 
  * @param filterModel: AG Grid FilterModel containing filter params
  * @param sortModel: AG Grid SortModelItem[] containing target column and sort type 'asc' vs 'desc'
+ * @param limit: number of rows to return in query
+ * @param offset: number for cursor offset (primary key id) where to start the query  
  * 
- * @returns final query object with sorts and filters applied 
+ * @returns final query object with sorts, filters, and pagination applied 
  */
 export default function buildQuery<T extends PgTable<any>> (
     query: any, 
     table: T,
     filterModel: FilterModel = {}, 
-    sortModel: SortModel,
-    options: { limit?: number; offset?: number } = {}
+    sortModel: SortModel = [],
+    limit?: number,
+    offset?: number,
 ) {
     const queryFilters = Object.keys(filterModel).reduce((accFilters, filterKey) => {
         const { type, filter } = filterModel[filterKey];
@@ -57,8 +60,7 @@ export default function buildQuery<T extends PgTable<any>> (
         }
     }
 
-    const { limit, offset } =  options
-    if (options.offset) {
+    if (offset) {
         const idColumn = (table as unknown as { id: PgColumn }).id;
         query = query.where(gt(idColumn, offset));
     }

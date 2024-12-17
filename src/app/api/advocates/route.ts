@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const { filterModel, sortModel, offset, limit = 10 } = body;
 
     let query = db.select().from(advocates);
-    query = buildQuery(query, advocates, filterModel, sortModel, { offset, limit });
+    query = buildQuery(query, advocates, filterModel, sortModel, offset, limit);
 
     const data = await query;
     const nextCursor = data.length > 0 ? data[data.length - 1].id : null;
