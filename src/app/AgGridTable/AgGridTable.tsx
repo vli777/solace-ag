@@ -1,10 +1,10 @@
 import React, { useRef, useMemo, useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
-import { IGetRowsParams, ColDef } from "ag-grid-community";
+import { IGetRowsParams, ColDef, InfiniteRowModelModule, ValidationModule, ModuleRegistry, GridReadyEvent } from "ag-grid-community";
 import { fetchData } from "../utils/fetchData";
-import { FilterModel, SortModel } from "@/types/query";
+import { FilterModel } from "@/types/query";
+
+ModuleRegistry.registerModules([InfiniteRowModelModule, ValidationModule]);
 
 type AgGridTableProps = {
   url: string;
@@ -46,8 +46,8 @@ const AgGridTable = ({ url, columnDefs, filterModel }: AgGridTableProps) => {
 
         const response = await fetchData<any>({
           url,
-          sortModel: sortModel as SortModel,
-          filterModel: filterModel as FilterModel,
+          sortModel,
+          filterModel,
           offset,
           limit,
         });
@@ -63,19 +63,14 @@ const AgGridTable = ({ url, columnDefs, filterModel }: AgGridTableProps) => {
     },
   }), [url, filterModel]);
 
-  const onGridReady = () => {
-    gridRef.current?.api?.setGridOption("datasource", data);
-  };
-
   return (
-    <div className="ag-theme-alpine h-full w-full">
+    <div className="ag-theme-quartz h-full w-full">
       <AgGridReact
         ref={gridRef}
         columnDefs={columnDefs}
         rowModelType="infinite"
         cacheBlockSize={cacheBlockSize} 
-        onGridReady={onGridReady}
-        pagination={false}
+        datasource={data}        
       />
     </div>
   );
