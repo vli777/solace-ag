@@ -5,6 +5,8 @@ import AgGridTable from "./AgGridTable/AgGridTable";
 import { advocatesColumnDefs } from "./columnDefs";
 import { FilterModel } from "@/types/query";
 
+const advocatesColumns: string[] = advocatesColumnDefs.map((col) => col.field)
+
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterModel, setFilterModel] = useState<FilterModel>({});
@@ -16,12 +18,18 @@ export default function Home() {
 
   const handleSearch = () => {    
     if (searchTerm.trim()) {
-      setFilterModel({
-        name: {
-          type: "contains",
-          filter: searchTerm.trim(),
+      const searchAllModel: FilterModel = advocatesColumns.reduce(
+        (acc, columnName) => {
+          acc[columnName] = {
+            type: "contains",
+            filter: searchTerm.trim(),
+          };
+          return acc;
         },
-      });
+        {} as FilterModel
+      );
+
+      setFilterModel(searchAllModel);
     }
   };
 
@@ -35,10 +43,9 @@ export default function Home() {
     <main className="m-6 space-y-6">
       <h1 className="text-2xl font-bold">Solace Advocates</h1>
       <div className="space-y-2">
-        <p className="font-medium">Search</p>
         <div className="flex items-center gap-2">
           <input
-            className="border border-black p-2 w-64"
+            className="border rounded p-2 w-64"
             placeholder="Searching for"
             value={searchTerm}
             onChange={onChangeSearch}
