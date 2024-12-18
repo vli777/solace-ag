@@ -68,8 +68,6 @@ const AgGridTable = ({ url, columnDefs, filterModel }: AgGridTableProps) => {
         const rows = response.data || [];
         const lastRow = response.nextCursor === null ? startRow + rows.length : undefined;
 
-        console.log("Next Cursor:", response.nextCursor, "Last Row:", lastRow);
-
         params.successCallback(rows, lastRow);
       } catch (error) {
         console.error("Error fetching rows:", error);

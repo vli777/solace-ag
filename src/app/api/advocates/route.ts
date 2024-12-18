@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import db from "@/db";
 import { advocates } from "@/db/schema";
-import buildQuery from "@/app/utils/buildQuery";
-import { PgSelect } from "drizzle-orm/pg-core";
-import { Advocate } from "@/db/seed/advocates";
+import buildQuery from "@/db/queries/buildQuery";
 
 export async function POST(req: Request) {
   try {
@@ -12,10 +10,9 @@ export async function POST(req: Request) {
     console.log(body)
     const fetchLimit = limit + 1
 
-    const advocatesQuery = db.select().from(advocates) as any    
-    const dynamicAdvocatesQuery = advocatesQuery.$dynamic().limit(fetchLimit).offset(offset)
-     // buildQuery(dynamicQuery, filterModel, sortModel, offset, fetchLimit);
-
+    const advocatesQuery = db.select().from(advocates) as any;
+    const dynamicAdvocatesQuery = buildQuery(advocatesQuery.$dynamic(), advocates, filterModel, sortModel, offset, fetchLimit)      
+          
     const rawData = await dynamicAdvocatesQuery;
     const data = rawData.slice(0, limit)
 
