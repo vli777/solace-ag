@@ -1,9 +1,9 @@
 "use client";
 
-import { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
-import AgGridTable from "./AgGridTable/AgGridTable";
+import { ChangeEvent, useEffect, useState } from "react";
 import { advocatesColumnDefs } from "./columnDefs";
 import { FilterModel } from "@/types/query";
+import { AgGridTable, SearchInput } from "./Components";
 
 const advocatesColumns: string[] = advocatesColumnDefs.map((col) => col.field)
 
@@ -11,7 +11,7 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterModel, setFilterModel] = useState<FilterModel>({});
 
-  const onChangeSearch = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChangeSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const searchTerm = e.target.value;
     setSearchTerm(searchTerm);
   }
@@ -33,12 +33,6 @@ export default function Home() {
     }
   };
 
-  const onKeyDownSearch = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
-
   const handleClearSearch = () => {
     setSearchTerm("");
     setFilterModel({}); 
@@ -55,29 +49,12 @@ export default function Home() {
       <h1 className="text-2xl font-bold">Solace Advocates</h1>
       <div className="space-y-2">
         <div className="flex items-center gap-2 w-128">
-          <div className="relative w-full">
-            <input
-              className="border rounded p-2 w-full pr-10"
-              placeholder="Searching for"
-              value={searchTerm}
-              onChange={onChangeSearch}
-              onKeyDown={onKeyDownSearch}
-            />
-            {searchTerm && (
-              <button
-                onClick={handleClearSearch}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent text-gray-500 hover:text-gray-800"
-              >
-                X
-              </button>
-            )}
-          </div>
-          <button
-            onClick={handleSearch}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Search
-          </button>
+          <SearchInput
+            searchTerm={searchTerm}
+            onSearch={handleSearch}
+            onClear={handleClearSearch}
+            onChange={handleChangeSearch}
+          />
         </div>
       </div>
       

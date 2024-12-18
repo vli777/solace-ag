@@ -1,7 +1,7 @@
 import React, { useRef, useMemo, useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { IGetRowsParams, ColDef, InfiniteRowModelModule, ValidationModule, ModuleRegistry, ColumnAutoSizeModule } from "ag-grid-community";
-import { fetchData } from "../utils/fetchData";
+import { fetchData } from "../../utils/fetchData";
 import { FilterModel } from "@/types/query";
 
 ModuleRegistry.registerModules([ InfiniteRowModelModule, ValidationModule, ColumnAutoSizeModule ]);
