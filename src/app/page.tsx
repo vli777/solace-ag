@@ -39,18 +39,39 @@ export default function Home() {
     }
   };
 
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    setFilterModel({}); 
+  };
+
+  useEffect(() => {
+    if (!searchTerm.length) {
+      handleClearSearch();
+    }
+  }, [searchTerm])
+
   return (
     <main className="m-6 space-y-6">
       <h1 className="text-2xl font-bold">Solace Advocates</h1>
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <input
-            className="border rounded p-2 w-64"
-            placeholder="Searching for"
-            value={searchTerm}
-            onChange={onChangeSearch}
-            onKeyDown={onKeyDownSearch}
-          />
+        <div className="flex items-center gap-2 w-128">
+          <div className="relative w-full">
+            <input
+              className="border rounded p-2 w-full pr-10"
+              placeholder="Searching for"
+              value={searchTerm}
+              onChange={onChangeSearch}
+              onKeyDown={onKeyDownSearch}
+            />
+            {searchTerm && (
+              <button
+                onClick={handleClearSearch}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent text-gray-500 hover:text-gray-800"
+              >
+                X
+              </button>
+            )}
+          </div>
           <button
             onClick={handleSearch}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -59,7 +80,7 @@ export default function Home() {
           </button>
         </div>
       </div>
-
+      
       <div className="flex-1 h-[900px]">
         <AgGridTable
           url="/api/advocates"
