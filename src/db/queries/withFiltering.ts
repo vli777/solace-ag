@@ -1,12 +1,11 @@
-import { ilike, eq, and, SQL, AnyColumn, sql } from "drizzle-orm";
-import { PgJsonb, PgSelectDynamic, PgTable } from "drizzle-orm/pg-core";
-
-const textTypes = ["text", "varchar", "char"]
+import { FilterModel } from "@/types/query";
+import { ilike, eq, and, SQL, AnyColumn, sql, or } from "drizzle-orm";
+import { PgSelectDynamic, PgTable } from "drizzle-orm/pg-core";
 
 export function withFiltering<T extends PgTable<any>>(
   qb: PgSelectDynamic<any>,
   table: T,
-  filterModel: Record<string, { type: string; filter: string }> = {}
+  filterModel: FilterModel,
 ): PgSelectDynamic<any> {
   const filters: SQL[] = Object.keys(filterModel).reduce((accFilters, filterKey) => {
     const { type, filter } = filterModel[filterKey];
@@ -14,18 +13,20 @@ export function withFiltering<T extends PgTable<any>>(
 
     const tableColumn = table[filterKey as keyof T] as unknown as AnyColumn;
     if (!tableColumn) return accFilters;
-    console.log({tableColumn})
+
     // filter non-text to prevent sql operation err
-    const isJsonb = tableColumn instanceof PgJsonb 
-    const isTextCompatible = textTypes.includes(tableColumn.dataType);
-    if (!isJsonb && !isTextCompatible) {
-      return accFilters
+    const isTextCompatible = ['json', 'string'].includes(tableColumn.dataType);
+    if (!isTextCompatible) {  
+      return accFilters;
     }
-    const column: any = isJsonb ? sql`${tableColumn}::text` : tableColumn;
+
+    const column: SQL = tableColumn.dataType === 'json'
+      ? sql`${tableColumn}::text`
+      : sql`${tableColumn}`; 
 
     switch (type) {
       case "equals":
-        accFilters.push(eq(column, filter));
+        accFilters.push(eq(column, sql`${filter}`));
         break;
       case "contains":
         accFilters.push(ilike(column, `%${filter}%`));
@@ -36,10 +37,13 @@ export function withFiltering<T extends PgTable<any>>(
       case "endsWith":
         accFilters.push(ilike(column, `%${filter}`));
         break;
+      default:
+        console.warn(`Unsupported filter type '${type}' for column '${filterKey}'.`);
+        break;
     }
 
     return accFilters;
   }, [] as SQL[]);
 
-  return filters.length > 0 ? qb.where(and(...filters)) : qb;
+  return filters.length > 0 ? qb.where(or(...filters)) : qb;
 }
