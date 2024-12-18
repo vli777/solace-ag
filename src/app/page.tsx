@@ -4,6 +4,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { advocatesColumnDefs } from "./columnDefs";
 import { FilterModel } from "@/types/query";
 import { AgGridTable, SearchInput } from "./Components";
+import { Logo } from "./Logo";
 
 const advocatesColumns: string[] = advocatesColumnDefs.map((col) => col.field)
 
@@ -45,8 +46,11 @@ export default function Home() {
   }, [searchTerm])
 
   return (
-    <main className="m-6 space-y-6">
-      <h1 className="text-2xl font-bold">Solace Advocates</h1>
+    <main className="m-6 space-y-6">      
+      <div className="flex items-center">
+        <Logo />
+        <span className="text-3xl font-bold"> Advocates</span>
+      </div>
       <div className="space-y-2">
         <div className="flex items-center gap-2 w-128">
           <SearchInput

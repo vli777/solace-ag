@@ -36,7 +36,8 @@ export const SearchInput = ({ searchTerm, onSearch, onClear, onChange }: SearchI
       </div>
       <button
         onClick={onSearch}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        className="text-white px-4 py-2 rounded"
+        style={{ backgroundColor: "#1d4339" }}
       >
         Search
       </button>
