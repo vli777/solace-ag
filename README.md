@@ -1,4 +1,4 @@
-## Solace
+## Solace AG
 
 This code demonstrates how to implement server-side sorting and filtering for big data using AG-Grid. The assignment provider utilized a small subset of data for client-side handling. However, the description noted it could have 100k+ rows of data in production. I chose this approach due to having worked with financial data, where client-side data processing would be highly impractical. Using my approach, all that is needed is db indexing and creating separate views per client based on the last call. This would result in retrieving the proper subset of results even after sorting and filtering large datasets.
 
